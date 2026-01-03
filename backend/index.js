@@ -1,40 +1,43 @@
 import express from "express";
 import connectDB from "./DB/db.js";
-import cors from 'cors'
-import productRoutes from './controllers/productController.js'
-import authRoutes from './routes/auth.routes.js'
-import userRoutes from './routes/user.routes.js'
+import cors from "cors";
+import productRoutes from "./controllers/productController.js";
+import authRoutes from "./routes/auth.routes.js";
+import userRoutes from "./routes/user.routes.js";
 import dotenv from "dotenv";
-import cookieParser from  'cookie-parser'
+import cookieParser from "cookie-parser";
 dotenv.config();
-const port = process.env.PORT || 3000
+const port = process.env.PORT || 3000;
 
 const app = express();
 
-
 const allowedOrigins = [
   "http://localhost:5173",
-  process.env.FRONTEND_URL,
+  "https://susmitajadhav.github.io",
 ];
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
       }
+      return callback(null, false);
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
+// 👇 THIS LINE IS MANDATORY
+app.options("*", cors());
 
-app.use(cookieParser())
+app.use(cookieParser());
 app.use(express.json());
 
-app.use('/api',productRoutes);
+app.use("/api", productRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 
@@ -50,20 +53,12 @@ app.use((err, req, res, next) => {
   });
 });
 
-
-
-connectDB().then(()=>{
-  app.listen(port, () => {
-  console.log(`server got conncted port ${port} sucessfully`);
-});
-}
-    
-).catch(
-(err)=>{
- console.error(err.message);
-  
-}
-)
-
-
-
+connectDB()
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`server got conncted port ${port} sucessfully`);
+    });
+  })
+  .catch((err) => {
+    console.error(err.message);
+  });
