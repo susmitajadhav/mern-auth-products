@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { createAuthFetch } from "../utils/authFetch";
+import { API_BASE_URL } from "../config/api";
 
 export const AuthContext = createContext(null);
 
@@ -10,10 +11,10 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-          credentials: "include", // IMPORTANT: allow HttpOnly cookie
+        credentials: "include", // IMPORTANT: allow HttpOnly cookie
         body: JSON.stringify(credentials),
       });
 
@@ -31,7 +32,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/auth/logout", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/logout`, {
         method: "POST",
         credentials: "include",
       });
@@ -41,48 +42,47 @@ export const AuthProvider = ({ children }) => {
     }
   };
   const refresh = async () => {
-    try {
-      const res = await fetch("http://localhost:5000/api/auth/refresh", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      });
+    const res = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+      method: "POST",
+      credentials: "include",
+    });
 
-      if (!res.ok) {
-        throw new Error("Refresh Failed");
-      }
-      const data = await res.json();
-      setAccessToken(data.accessToken);
-      setUser(data.user);
-      return data.accessToken;
-    } catch (error) {
-      throw error;
-    }
+    if (!res.ok) throw new Error("Refresh failed");
+
+    const data = await res.json();
+    setAccessToken(data.accessToken);
+    return data.accessToken;
   };
 
   // inside AuthProvider
-const authFetch = createAuthFetch({
-  getAccessToken: () => accessToken,
-  refresh,
-  logout,
-});
+  const authFetch = createAuthFetch({
+    getAccessToken: () => accessToken,
+    refresh,
+    logout,
+  });
 
   useEffect(() => {
-    const bootstrap = async () => {
-      try {
-        await refresh();
-      } catch (error) {
-        // not logged in
-      } finally {
-        setLoading(false);
-      }
-    };
-    bootstrap();
-  }, []);
+  const bootstrap = async () => {
+    try {
+      const token = await refresh();
+      const res = await fetch(`${API_BASE_URL}/api/users/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setUser(data.user);
+    } catch {
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+  bootstrap();
+}, []);
+
 
   return (
     <AuthContext.Provider
-      value={{ user, accessToken, loading, login, logout, refresh ,authFetch,}}
+      value={{ user, accessToken, loading, login, logout, refresh, authFetch }}
     >
       {children}
     </AuthContext.Provider>

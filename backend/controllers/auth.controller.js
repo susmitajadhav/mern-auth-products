@@ -102,14 +102,16 @@ export const loginUser = async (req, res, next) => {
     await user.save();
 
     /* ---------- COOKIE (LOCAL DEV SAFE) ---------- */
+    const isProduction = process.env.NODE_ENV === "production";
+
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: isProduction,
+      secure: isProduction, // ✅ true on Render
       sameSite: isProduction ? "none" : "lax",
       path: "/api/auth/refresh",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-
+    An;
     res.status(200).json({
       message: "Login successful",
       accessToken,
@@ -176,14 +178,16 @@ export const refreshToken = async (req, res) => {
     await user.save();
 
     /* ---------- SET NEW COOKIE ---------- */
-    res.cookie("refreshToken", newRefreshToken, {
+    const isProduction = process.env.NODE_ENV === "production";
+
+    res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: isProduction,
+      secure: isProduction, // ✅ true on Render
       sameSite: isProduction ? "none" : "lax",
       path: "/api/auth/refresh",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-
+    An;
     return res.json({
       accessToken: generateAccessToken(user),
     });
@@ -207,13 +211,18 @@ export const logoutUser = async (req, res) => {
     { $pull: { refreshTokens: { tokenHash } } }
   );
 
-  res.clearCookie("refreshToken", {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
-    path: "/api/auth/refresh",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+  const isProduction = process.env.NODE_ENV === "production";
+
+res.clearCookie("refreshToken", refreshToken, {
+  httpOnly: true,
+  secure: isProduction,               // ✅ true on Render
+  sameSite: isProduction ? "none" : "lax",
+  path: "/api/auth/refresh",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+});
+
+
+
 
   return res.sendStatus(204);
 };

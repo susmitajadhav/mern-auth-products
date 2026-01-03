@@ -28,7 +28,7 @@ function Product() {
     try {
       const limit = 3;
       const res = await authFetch(
-        `http://localhost:5000/api/products?page=${page}&limit=${limit}&search=${search}`
+        `${API_BASE_URL}/api/products?page=${page}&limit=${limit}&search=${search}`
       );
 
       if (!res.ok) {
