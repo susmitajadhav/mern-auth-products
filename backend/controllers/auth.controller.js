@@ -111,7 +111,7 @@ export const loginUser = async (req, res, next) => {
       path: "/api/auth/refresh",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-    An;
+    
     res.status(200).json({
       message: "Login successful",
       accessToken,
