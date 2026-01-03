@@ -11,7 +11,7 @@ const port = process.env.PORT || 3000
 
 const app = express();
 
-app.use(express.json());
+
 const allowedOrigins = [
   "http://localhost:5173",
   process.env.FRONTEND_URL,
@@ -32,6 +32,7 @@ app.use(
 
 
 app.use(cookieParser())
+app.use(express.json());
 
 app.use('/api',productRoutes);
 app.use("/api/auth", authRoutes);
