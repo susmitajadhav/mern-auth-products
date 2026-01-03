@@ -7,17 +7,29 @@ import userRoutes from './routes/user.routes.js'
 import dotenv from "dotenv";
 import cookieParser from  'cookie-parser'
 dotenv.config();
-
+const port = process.env.PORT || 3000
 
 const app = express();
 
 app.use(express.json());
+const allowedOrigins = [
+  "http://localhost:5173",
+  process.env.FRONTEND_URL,
+];
+
 app.use(
   cors({
-    origin: "http://localhost:5173", // your frontend URL
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
+
 
 app.use(cookieParser())
 
@@ -30,10 +42,18 @@ app.get("/health", (req, res) => {
   res.json({ status: "OK" });
 });
 
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({
+    message: "Internal Server Error",
+  });
+});
+
+
 
 connectDB().then(()=>{
-  app.listen(process.env.PORT, () => {
-  console.log(`server got conncted port ${process.env.PORT} sucessfully`);
+  app.listen(port, () => {
+  console.log(`server got conncted port ${port} sucessfully`);
 });
 }
     

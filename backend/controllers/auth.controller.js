@@ -104,8 +104,8 @@ export const loginUser = async (req, res, next) => {
     /* ---------- COOKIE (LOCAL DEV SAFE) ---------- */
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: false,          // MUST be false on localhost
-      sameSite: "lax",        // allows cross-origin fetch
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
       path: "/api/auth/refresh",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -135,10 +135,7 @@ export const refreshToken = async (req, res) => {
 
     let payload;
     try {
-      payload = jwt.verify(
-        refreshToken,
-        process.env.JWT_REFRESH_SECRET
-      );
+      payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
     } catch {
       return res.sendStatus(403);
     }
@@ -181,8 +178,8 @@ export const refreshToken = async (req, res) => {
     /* ---------- SET NEW COOKIE ---------- */
     res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
-      secure: false, // localhost
-      sameSite: "lax",
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
       path: "/api/auth/refresh",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -195,7 +192,6 @@ export const refreshToken = async (req, res) => {
     return res.sendStatus(401);
   }
 };
-
 
 /* =========================
    LOGOUT
@@ -213,11 +209,11 @@ export const logoutUser = async (req, res) => {
 
   res.clearCookie("refreshToken", {
     httpOnly: true,
-    secure: false,      // localhost
-    sameSite: "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
     path: "/api/auth/refresh",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
   return res.sendStatus(204);
 };
-
