@@ -45,6 +45,8 @@ app.use("/api/users", userRoutes);
 app.get("/health", (req, res) => {
   res.json({
     status: "OK",
+    service: "mern-auth-products-api",
+    uptimeSeconds: Math.floor(process.uptime()),
     timestamp: new Date().toISOString(),
   });
 });
