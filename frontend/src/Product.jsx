@@ -11,8 +11,10 @@ function throttle(fn, delay) {
 }
 
 import React, { useEffect, useMemo, useState } from "react";
+import { API_BASE_URL } from "./config/api.js";
 import { useAuth } from "./context/AuthContext.jsx";
 import "./styles/Product.css";
+
 
 function Product() {
   const { authFetch } = useAuth();
