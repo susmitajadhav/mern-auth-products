@@ -43,7 +43,10 @@ app.use("/api/users", userRoutes);
 
 // health check (interviewers love this)
 app.get("/health", (req, res) => {
-  res.json({ status: "OK" });
+  res.json({
+    status: "OK",
+    timestamp: new Date().toISOString(),
+  });
 });
 
 app.use((err, req, res, next) => {
